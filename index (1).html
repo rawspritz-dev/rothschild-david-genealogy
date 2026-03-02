@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rothschild Lineage → King David</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d1a; font-family: 'Georgia', serif; color: #f0e6c8; min-height: 100vh; }
+
+  .header {
+    text-align: center;
+    padding: 32px 20px 12px;
+    background: linear-gradient(180deg, #1a0a00 0%, transparent 100%);
+  }
+  .header h1 { font-size: 1.9rem; color: #d4af37; letter-spacing: 3px; text-transform: uppercase; }
+  .header p { color: #a08060; margin-top: 8px; font-size: 0.85rem; font-style: italic; }
+  .header .source { color: #4a8fcc; font-size: 0.75rem; margin-top: 4px; }
+
+  .tree-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 40px 60px;
+  }
+
+  .tier {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+  }
+
+  .connector-down {
+    width: 2px; height: 36px;
+    background: linear-gradient(180deg, #d4af37, #8b6914);
+    margin: 0 auto; position: relative;
+  }
+  .connector-down::after {
+    content: '▼'; position: absolute; bottom: -13px; left: 50%;
+    transform: translateX(-50%); color: #d4af37; font-size: 11px;
+  }
+  .connector-branch {
+    width: 2px; height: 36px;
+    background: linear-gradient(180deg, #8b6914, #5a4510);
+    margin: 0 auto; position: relative;
+  }
+  .connector-branch::after {
+    content: '▼'; position: absolute; bottom: -13px; left: 50%;
+    transform: translateX(-50%); color: #8b6914; font-size: 10px;
+  }
+
+  .node {
+    border-radius: 8px; padding: 11px 15px; text-align: center;
+    cursor: default; transition: transform 0.2s, box-shadow 0.2s;
+    min-width: 150px; max-width: 210px;
+  }
+  .node:hover { transform: scale(1.04); box-shadow: 0 0 22px rgba(212,175,55,0.4); }
+
+  .node-title { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; opacity: 0.75; }
+  .node-name  { font-size: 0.92rem; font-weight: bold; line-height: 1.3; }
+  .node-dates { font-size: 0.7rem; margin-top: 3px; opacity: 0.65; }
+  .node-note  { font-size: 0.65rem; margin-top: 5px; font-style: italic; opacity: 0.6; }
+
+  .type-origin  { background: linear-gradient(135deg,#2d1b00,#4a2e00); border:2px solid #d4af37; box-shadow:0 0 20px rgba(212,175,55,0.3); }
+  .type-origin .node-name { color:#f5d060; font-size:1.25rem; }
+
+  .type-exilarch { background:linear-gradient(135deg,#1a0a2e,#2d1260); border:2px solid #9b59b6; box-shadow:0 0 14px rgba(155,89,182,0.25); }
+  .type-exilarch .node-name { color:#d7aef0; }
+
+  .type-rashi { background:linear-gradient(135deg,#0a1a2e,#122050); border:2px solid #3498db; }
+  .type-rashi .node-name { color:#7ec8f0; }
+
+  .type-maharal { background:linear-gradient(135deg,#1a2e0a,#2a4a10); border:2px solid #27ae60; }
+  .type-maharal .node-name { color:#90e07a; }
+
+  .type-bacharach { background:linear-gradient(135deg,#2e1a0a,#4a3010); border:2px solid #e67e22; }
+  .type-bacharach .node-name { color:#f0b070; }
+
+  .type-hahn { background:linear-gradient(135deg,#1a1a2e,#2a2a50); border:2px solid #5dade2; }
+  .type-hahn .node-name { color:#a8d8f0; }
+
+  .type-rothschild { background:linear-gradient(135deg,#2e0a0a,#5a1010); border:2px solid #e74c3c; box-shadow:0 0 18px rgba(231,76,60,0.3); }
+  .type-rothschild .node-name { color:#f08080; }
+
+  .type-living { background:linear-gradient(135deg,#1a1a0a,#3a3a10); border:2px solid #f1c40f; box-shadow:0 0 14px rgba(241,196,15,0.3); }
+  .type-living .node-name { color:#f7dc6f; }
+
+  .type-dna { background:linear-gradient(135deg,#0a1a0a,#104010); border:2px dashed #2ecc71; }
+  .type-dna .node-name { color:#82e0aa; font-size:0.85rem; }
+
+  .badge {
+    display:inline-block; font-size:0.55rem; padding:2px 5px;
+    border-radius:20px; margin-top:4px; font-style:normal; letter-spacing:0.5px;
+  }
+  .badge-high { background:#1a3a1a; color:#6dcc6d; border:1px solid #27ae60; }
+  .badge-med  { background:#3a3a1a; color:#cccc6d; border:1px solid #c0a020; }
+  .badge-low  { background:#3a1a1a; color:#cc8080; border:1px solid #c04040; }
+  .badge-dna  { background:#0a2a1a; color:#6dcca0; border:1px solid #1abc9c; }
+
+  .branch-wrapper {
+    display:flex; align-items:flex-start; justify-content:center;
+    gap:40px; width:100%;
+  }
+  .branch-col { display:flex; flex-direction:column; align-items:center; }
+
+  .note-box {
+    background:#111; border:1px solid #444; border-radius:8px;
+    padding:10px 18px; max-width:680px; text-align:center;
+    font-size:0.74rem; color:#888; margin:6px auto; font-style:italic;
+  }
+  .note-box strong { color:#aaa; }
+
+  .section-label {
+    font-size:0.65rem; text-transform:uppercase; letter-spacing:2px;
+    color:#555; text-align:center; margin:4px 0;
+  }
+
+  .families-row {
+    display:flex; flex-wrap:wrap; justify-content:center;
+    gap:10px; padding:4px 20px;
+  }
+
+  .family-pill {
+    background:#1a1a2a; border:1px solid #444; border-radius:20px;
+    padding:4px 12px; font-size:0.68rem; color:#999;
+  }
+
+  .legend {
+    display:flex; flex-wrap:wrap; justify-content:center;
+    gap:14px; padding:20px 40px; border-top:1px solid #333; margin-top:16px;
+  }
+  .legend-item { display:flex; align-items:center; gap:7px; font-size:0.74rem; color:#a08060; }
+  .legend-dot  { width:13px; height:13px; border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>⚜ Genealogical Lineage: King David → Rothschild ⚜</h1>
+  <p>Critical analysis of documented and traditional connections | 10th Century BCE – Present</p>
+  <p class="source">Primary source: Bacharach, Rothschild, Hahn, Bauer Chart (Janet Billstein Akaha, 2013) · jewsoffrankfurt.com</p>
+</div>
+
+<div class="tree-container">
+
+  <!-- KING DAVID -->
+  <div class="tier">
+    <div class="node type-origin">
+      <div class="node-title">Origin Point</div>
+      <div class="node-name">👑 King David</div>
+      <div class="node-dates">c. 1010 – 970 BCE</div>
+      <div class="node-note">King of Israel and Judah</div>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- EXILARCHS -->
+  <div class="tier">
+    <div class="node type-exilarch" style="max-width:270px">
+      <div class="node-title">Babylonian Exilarchate</div>
+      <div class="node-name">Exilarchs (Resh Galuta)</div>
+      <div class="node-dates">~586 BCE – 11th Century CE</div>
+      <div class="node-note">Guardians of the Davidic bloodline through Babylonian exile. Recognized leaders of world Jewry.</div>
+      <span class="badge badge-med">Evidence: Historical / Rabbinic</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- RASHI BRANCH -->
+  <div class="section-label">— 11th – 12th Century —</div>
+  <div class="branch-wrapper">
+    <div class="branch-col">
+      <div class="node type-rashi" style="max-width:190px">
+        <div class="node-title">Via Rashi</div>
+        <div class="node-name">Rashi</div>
+        <div class="node-dates">1040 – 1105</div>
+        <div class="node-note">Rabbi Shlomo Yitzchaki. Connection to the Exilarchs is debated among genealogists.</div>
+        <span class="badge badge-low">Evidence: Disputed</span>
+      </div>
+      <div class="connector-branch"></div>
+      <div style="height:12px"></div>
+      <div class="node type-rashi" style="max-width:190px">
+        <div class="node-title">Treves / Luria Families</div>
+        <div class="node-name">Treves / Luria</div>
+        <div class="node-dates">12th – 14th Century</div>
+        <div class="node-note">Descendants of Rashi. Interconnected with Rhineland and Prague rabbinic families.</div>
+        <span class="badge badge-med">Evidence: Genealogical</span>
+      </div>
+    </div>
+    <div class="branch-col" style="margin-top:70px">
+      <div class="note-box">
+        ⚠ <strong>Critical Gap:</strong> The chain between the last documented Exilarchs (~11th century) and medieval European rabbinic families relies primarily on oral tradition and later rabbinic genealogies (Neil Rosenstein, 20th century). This is the weakest link in the Davidic claim.
+      </div>
+    </div>
+  </div>
+
+  <div style="height:8px"></div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- MAHARAL -->
+  <div class="section-label">— 16th Century —</div>
+  <div class="tier">
+    <div class="node type-maharal" style="max-width:270px">
+      <div class="node-title">Central Figure of the Lineage</div>
+      <div class="node-name">🏛 Maharal of Prague</div>
+      <div class="node-dates">Rabbi Judah Loew ben Bezalel<br>c. 1525 – 1609</div>
+      <div class="node-note">Considered a descendant of the Exilarchs. Primary link connecting Davidic heritage to Ashkenazi families including Bacharach, Hahn, and Luria.</div>
+      <span class="badge badge-med">Evidence: Rabbinic Tradition</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- URI BACHARACH — CHART ROOT -->
+  <div class="section-label">— c. 1460 — Root of the Documented Chart —</div>
+  <div class="tier">
+    <div class="node type-bacharach" style="max-width:270px">
+      <div class="node-title">Chart Root · Bacharach Family</div>
+      <div class="node-name">Uri (Feibesch) Bacharach</div>
+      <div class="node-dates">c. 1460 · Frankfurt</div>
+      <div class="node-note">Top node of the 2013 Akaha genealogical chart. Connected to the Maharal via rabbinic tradition. Family name from Bacharach am Rhein.</div>
+      <span class="badge badge-med">Evidence: Documented (partial)</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- HAHN / BACHARACH INTERMARRIAGE -->
+  <div class="section-label">— Late 15th / Early 16th Century — Intermarried Families —</div>
+  <div class="branch-wrapper" style="gap:16px">
+    <div class="branch-col">
+      <div class="node type-bacharach" style="max-width:185px">
+        <div class="node-title">Bacharach Branch</div>
+        <div class="node-name">Abraham b. Elchanan</div>
+        <div class="node-dates">GEROTWHIL line · Frankfurt</div>
+        <div class="node-note">Early Frankfurt ancestor connecting the Bacharach name to the red-shield house.</div>
+        <span class="badge badge-med">Evidence: Chart documented</span>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-hahn" style="max-width:185px">
+        <div class="node-title">Hahn Family (zum Hahn)</div>
+        <div class="node-name">Haune (Elchanan) ben Feisl Uri</div>
+        <div class="node-dates">b. c.1490 · d. 25 Aug 1550<br>Frankfurt</div>
+        <div class="node-note">Settled in Frankfurt from 1530. Connected to the Hahn (rooster sign) house. Linked to Froiberg family.</div>
+        <span class="badge badge-med">Evidence: Chart documented</span>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-bacharach" style="max-width:185px">
+        <div class="node-title">Bacharach Scholar</div>
+        <div class="node-name">Rabbi Jair Chayim Bacharach</div>
+        <div class="node-dates">1638 – 1702</div>
+        <div class="node-note">Author of the "Chavat Yair". Documented descendant of the Maharal of Prague. Key genealogical anchor.</div>
+        <span class="badge badge-high">Evidence: Well documented</span>
+      </div>
+    </div>
+  </div>
+
+  <div style="height:8px"></div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- ISAAC ELCHANAN -->
+  <div class="section-label">— 16th Century — Direct Rothschild–Bacharach Link —</div>
+  <div class="tier">
+    <div class="node type-bacharach" style="max-width:290px">
+      <div class="node-title">Pivot: Bacharach → Rothschild Name</div>
+      <div class="node-name">Isaac Elchanan Bacharach</div>
+      <div class="node-dates">c. 1528 – 1588 · Frankfurt</div>
+      <div class="node-note">Also known as Isaac Elchanan Rothschild (zum Hahn / zum roten Schild). Adopted the red-shield sign. Patriarch of the Frankfurt Rothschild dynasty. Also connected to the Hahn house.</div>
+      <span class="badge badge-high">Evidence: Historical</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- MOSCHE + RAFAEL -->
+  <div class="section-label">— Late 16th / Early 17th Century —</div>
+  <div class="branch-wrapper" style="gap:16px">
+    <div class="branch-col">
+      <div class="node type-rothschild" style="max-width:195px">
+        <div class="node-title">Early Rothschild</div>
+        <div class="node-name">Mosche Rothschild</div>
+        <div class="node-dates">b. c.1570 · d. 19 Jul 1635<br>Frankfurt</div>
+        <div class="node-note">Son of Naftali m. c.1595. Married Sorie BONS. Key generational link in Frankfurt.</div>
+        <span class="badge badge-high">Evidence: Chart documented</span>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-hahn" style="max-width:195px">
+        <div class="node-title">Parallel Hahn Line</div>
+        <div class="node-name">Rafael Hahn / Rothschild</div>
+        <div class="node-dates">b. c.1490 · d. 2 Nov 1624<br>Frankfurt</div>
+        <div class="node-note">Dual name reflects house-sign transition from Hahn to Rothschild. Possibly connected to the FUCHS line.</div>
+        <span class="badge badge-med">Evidence: Partial</span>
+      </div>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- HIRSCH MOSCHE -->
+  <div class="section-label">— Early 17th Century —</div>
+  <div class="tier">
+    <div class="node type-rothschild" style="max-width:270px">
+      <div class="node-title">Frankfurt Rothschild Line</div>
+      <div class="node-name">Hirsch (Hertz) Mosche Rothschild</div>
+      <div class="node-dates">b. c.1600 · d. 1 Mar 1685<br>Frankfurt</div>
+      <div class="node-note">Married bat Kallmann ha-Kohen. Father of Kallmann Hirsch. Established the continuous Frankfurt Rothschild line documented through the 18th century.</div>
+      <span class="badge badge-high">Evidence: Chart documented</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- KALLMANN HIRSCH -->
+  <div class="section-label">— Mid 17th Century —</div>
+  <div class="tier">
+    <div class="node type-rothschild" style="max-width:290px">
+      <div class="node-title">Frankfurt Rothschild · Bauer Branch</div>
+      <div class="node-name">Kallmann Hirsch Rothschild-Bauer</div>
+      <div class="node-dates">b. ca.1630 · d. 18 Jul 1707<br>Frankfurt</div>
+      <div class="node-note">Connected to the Bauer family through marriage. Father of Moses Rothschild. The Bauer-Rothschild double name reflects intermarriage with another prominent Frankfurt family.</div>
+      <span class="badge badge-high">Evidence: Chart documented</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- MAYER AMSCHEL -->
+  <div class="section-label">— 18th Century — Dynasty Founder —</div>
+  <div class="tier">
+    <div class="node type-rothschild" style="max-width:310px">
+      <div class="node-title">Founder of the Banking Dynasty</div>
+      <div class="node-name">🏦 Mayer Amschel Rothschild</div>
+      <div class="node-dates">1744 – 1812 · Frankfurt</div>
+      <div class="node-note">Founder of the Rothschild banking empire. Court agent to Wilhelm IX of Hesse-Kassel. His five sons established branches across Europe. Direct descendant of Isaac Elchanan Bacharach via the documented Frankfurt chain.</div>
+      <span class="badge badge-high">Evidence: Fully documented</span>
+    </div>
+  </div>
+  <div class="connector-down"></div>
+  <div style="height:12px"></div>
+
+  <!-- FIVE SONS -->
+  <div class="section-label">— 19th Century — The Five Sons (Five Arrows) —</div>
+  <div class="branch-wrapper" style="gap:10px">
+    <div class="branch-col">
+      <div class="node type-rothschild" style="min-width:120px;max-width:140px;padding:9px">
+        <div class="node-name" style="font-size:0.8rem">Amschel Mayer</div>
+        <div class="node-dates">1773–1855</div>
+        <div class="node-dates" style="color:#f0b070">Frankfurt 🇩🇪</div>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-rothschild" style="min-width:120px;max-width:140px;padding:9px">
+        <div class="node-name" style="font-size:0.8rem">Salomon Mayer</div>
+        <div class="node-dates">1774–1855</div>
+        <div class="node-dates" style="color:#f0b070">Vienna 🇦🇹</div>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-rothschild" style="min-width:120px;max-width:140px;padding:9px">
+        <div class="node-name" style="font-size:0.8rem">Nathan Mayer</div>
+        <div class="node-dates">1777–1836</div>
+        <div class="node-dates" style="color:#f0b070">London 🇬🇧</div>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-rothschild" style="min-width:120px;max-width:140px;padding:9px">
+        <div class="node-name" style="font-size:0.8rem">Calmann Mayer</div>
+        <div class="node-dates">1788–1855</div>
+        <div class="node-dates" style="color:#f0b070">Naples 🇮🇹</div>
+      </div>
+    </div>
+    <div class="branch-col">
+      <div class="node type-rothschild" style="min-width:120px;max-width:140px;padding:9px">
+        <div class="node-name" style="font-size:0.8rem">Jakob Mayer</div>
+        <div class="node-dates">1792–1868</div>
+        <div class="node-dates" style="color:#f0b070">Paris 🇫🇷</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector-down" style="margin-top:16px"></div>
+  <div style="height:12px"></div>
+
+  <!-- CONTINUED LINE + DNA -->
+  <div class="section-label">— 19th–20th Century — Continued Frankfurt Line & DNA Confirmation —</div>
+  <div class="branch-wrapper" style="gap:20px">
+    <div class="branch-col">
+      <div class="node type-rothschild" style="max-width:170px">
+        <div class="node-title">Frankfurt Branch</div>
+        <div class="node-name">Herz Rothschild</div>
+        <div class="node-dates">d. 1856 · Frankfurt</div>
+        <span class="badge badge-high">Chart documented</span>
+      </div>
+      <div class="connector-branch"></div>
+      <div style="height:12px"></div>
+      <div class="node type-rothschild" style="max-width:170px">
+        <div class="node-name">Meier Rothschild</div>
+        <div class="node-dates">b. 23 Feb 1744<br>d. 19 Sep 1812</div>
+        <span class="badge badge-high">Chart documented</span>
+      </div>
+      <div class="connector-branch"></div>
+      <div style="height:12px"></div>
+      <div class="node type-rothschild" style="max-width:170px">
+        <div class="node-name">Coleman Rothschild</div>
+        <span class="badge badge-high">Chart documented</span>
+      </div>
+      <div class="connector-branch"></div>
+      <div style="height:12px"></div>
+      <div class="node type-living" style="max-width:170px">
+        <div class="node-title">Living Descendant</div>
+        <div class="node-name">Carl E. Rothschild</div>
+        <div class="node-dates">Present day</div>
+        <span class="badge badge-dna">DNA: J2a4b3 ✓</span>
+      </div>
+    </div>
+
+    <div class="branch-col" style="margin-top:20px;gap:14px;display:flex;flex-direction:column;align-items:center">
+      <div class="node type-dna" style="max-width:250px">
+        <div class="node-title">DNA Confirmation · Jews of Frankfurt Project</div>
+        <div class="node-name">🧬 Y-DNA Haplogroup J2a4b3</div>
+        <div class="node-dates">Rothschilds of Zeitlofs &amp; Sichel of Mainz</div>
+        <div class="node-note">Perfect 37-marker Y-DNA match between these two families confirms common paternal ancestry. Sichel connection is hypothetical in the chart — based on naming patterns and intermarriages. No direct match to independently verified Davidic haplogroups confirmed to date.</div>
+        <span class="badge badge-dna">DNA link to Davidic lines: unconfirmed</span>
+      </div>
+
+      <div class="node type-hahn" style="max-width:250px">
+        <div class="node-title">Parallel Branch · DNA Match</div>
+        <div class="node-name">David of Rotenburg an der Fulda</div>
+        <div class="node-dates">b. ca.1735 · Rotenburg an der Fulda</div>
+        <div class="node-note">The Werthan family of Rotenburg is the only other family with a perfect 37-marker match to the Rothschild-Sichel line — suggesting descent from the same Frankfurt rabbinic ancestor.</div>
+        <span class="badge badge-dna">DNA: J2a4b3 match confirmed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERMARRIED FAMILIES -->
+  <div style="height:20px"></div>
+  <div class="note-box" style="max-width:760px">
+    <strong>Intermarried families documented in the Akaha chart (2013):</strong>
+  </div>
+  <div class="families-row">
+    <span class="family-pill">🟠 Bacharach</span>
+    <span class="family-pill">🔵 Hahn (zum Hahn)</span>
+    <span class="family-pill">🔴 Rothschild (zum roten Schild)</span>
+    <span class="family-pill">⚪ Bauer</span>
+    <span class="family-pill">🟣 Sichel</span>
+    <span class="family-pill">🟡 Werthan</span>
+    <span class="family-pill">⬛ Langenbach</span>
+    <span class="family-pill">🟢 Waag / Woog</span>
+    <span class="family-pill">🔷 Kaiser / Kaiser-Ring</span>
+    <span class="family-pill">⬜ Haas</span>
+    <span class="family-pill">🟤 Oppenheim</span>
+    <span class="family-pill">🔶 Breitinger</span>
+  </div>
+
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:#4a2e00;border:2px solid #d4af37"></div>Davidic Origin</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2d1260;border:2px solid #9b59b6"></div>Exilarchs / Ancestral Line</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#122050;border:2px solid #3498db"></div>Via Rashi / Luria / Treves</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2a4a10;border:2px solid #27ae60"></div>Maharal of Prague</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4a3010;border:2px solid #e67e22"></div>Bacharach Family</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2a2a50;border:2px solid #5dade2"></div>Hahn / Related Families</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#5a1010;border:2px solid #e74c3c"></div>Rothschild Family</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3a3a10;border:2px solid #f1c40f"></div>Living Descendant</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#104010;border:2px dashed #2ecc71"></div>DNA Confirmed</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#1a3a1a;border:1px solid #27ae60"></div>High Evidence</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3a3a1a;border:1px solid #c0a020"></div>Medium Evidence</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#3a1a1a;border:1px solid #c04040"></div>Disputed Evidence</div>
+</div>
+
+<div style="text-align:center;padding:14px;color:#444;font-size:0.68rem">
+  Primary source: "Bacharach, Rothschild, Hahn, Bauer" chart by Janet Billstein Akaha (2013) · jewsoffrankfurt.com<br>
+  Additional references: Wikipedia · Rothschild Archive · JewishEncyclopedia · Neil Rosenstein · BacharachDNA.com · Geni.com
+</div>
+
+</body>
+</html>
